@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fff"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="85dp"
+        android:background="@drawable/round_bottom_shadow"
+        android:orientation="vertical"
+        android:padding="15dp">
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/notesSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="120dp"
+            android:entries="@array/phrase" />
+
+        <!--android:drawSelectorOnTop="true"-->
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp">
+
+            <EditText
+                android:id="@+id/voiceTextET"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter Voice Text" />
+        </android.support.design.widget.TextInputLayout>
+
+        <TextView
+            android:id="@+id/proceedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="30dp"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/round_border_bg"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:paddingLeft="25dp"
+            android:paddingRight="25dp"
+            android:text="Proceed"
+            android:textColor="#000" />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/down_blue_arrow" />
+
+        <TextView
+            android:id="@+id/down_curve"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/down_side_curve" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/down_curve"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:gravity="center_horizontal"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="Select a Phrase from dropdown for Profile creation"
+            android:textColor="#fff"
+            android:textSize="16sp" />
+
+    </RelativeLayout>
+
+</RelativeLayout>
