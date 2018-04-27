@@ -73,6 +73,8 @@ public class VoiceEnrollment extends Activity {
     private WavAudioRecorder wavRecorder;
     DBHelper dbHelper;
     AuthUser authUser;
+    private String[] permissionArrays = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.RECORD_AUDIO};
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -90,11 +92,22 @@ public class VoiceEnrollment extends Activity {
         enroll_count = authUser.getEnroll_count();
         headerLabel.setText(authUser.getPhrase());
 
-        isStoragePermissionGranted();
-        isAudioPermissionGranted();
+        checkStorageAndAudioRTP();
 
+//        isStoragePermissionGranted();
+//        isAudioPermissionGranted();
+
+        settingFilePath();
+    }
+
+    private void checkStorageAndAudioRTP() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(permissionArrays, 11111);
+        }
+    }
+
+    private void settingFilePath() {
         File path = new File(Environment.getExternalStorageDirectory().getPath() + "/vrify");
-        Log.d("Profile", "onCreate: " + path);
         path.mkdirs();
         try {
             finalFile = File.createTempFile("wavefile", ".wav", path);
@@ -103,19 +116,19 @@ public class VoiceEnrollment extends Activity {
         }
     }
 
-    private class EnrollmentTask extends AsyncTask<Void, Void, Void> {
+    private class EnrollmentTask extends AsyncTask<Void, Void, Integer> {
         @Override
-        protected void onPostExecute(Void aVoid) {
+        protected void onPostExecute(Integer enroll_count) {
             progressbar.progressiveStop();
             progressbar.setVisibility(View.GONE);
-            super.onPostExecute(aVoid);
-            if (enroll_count == 1) {
+
+            if (enroll_count == 0) {
+                Toast.makeText(VoiceEnrollment.this, "Voice recording failed, please try again", Toast.LENGTH_LONG);
+            } else if (enroll_count == 1) {
                 success1.setImageResource(R.drawable.green_dot);
-            }
-            if (enroll_count == 2) {
+            } else if (enroll_count == 2) {
                 success2.setImageResource(R.drawable.green_dot);
-            }
-            if (enroll_count == 3) {
+            } else if (enroll_count == 3) {
                 voiceRecordingOptions.setImageResource(R.drawable.recordaudio);
                 voiceRecordingOptionLabel.setText("Success fully enrolled");
                 success3.setImageResource(R.drawable.green_dot);
@@ -141,16 +154,15 @@ public class VoiceEnrollment extends Activity {
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Integer doInBackground(Void... params) {
             try {
                 DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(finalFile)));
                 SpeakerVerificationRestClient restClient = new SpeakerVerificationRestClient("e3dcbca68ac9484cad5e05d57d138393");
                 Enrollment enroll = restClient.enroll(dis, UUID.fromString(authUser.getUuid()));
                 enroll_count = enroll.enrollmentsCount;
             } catch (Throwable t) {
-                Toast.makeText(VoiceEnrollment.this, "Failed, Please Try again", Toast.LENGTH_LONG);
             }
-            return null;
+            return enroll_count;
         }
     }
 
@@ -196,8 +208,7 @@ public class VoiceEnrollment extends Activity {
 
     public boolean isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 Log.v("Profile", "Permission is granted");
                 return true;
             } else {
@@ -214,10 +225,19 @@ public class VoiceEnrollment extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Log.v("Profile", "Permission: " + permissions[0] + "was " + grantResults[0]);
+        if (grantResults[0] != PackageManager.PERMISSION_GRANTED && grantResults[1] != PackageManager.PERMISSION_GRANTED) {
+            checkStorageAndAudioRTP();
+        } else if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 11111);
+            }
+        } else if (grantResults[1] != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, 11111);
+            }
         }
+//        else
+//            Toast.makeText(VoiceEnrollment.this, "Thanks for", Toast.LENGTH_LONG).show();
     }
-
 }
 

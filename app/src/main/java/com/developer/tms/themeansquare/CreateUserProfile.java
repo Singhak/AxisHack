@@ -10,7 +10,6 @@ import android.support.v7.widget.AppCompatSpinner;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +22,7 @@ import com.microsoft.cognitive.speakerrecognition.contract.verification.CreatePr
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 
 public class CreateUserProfile extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
@@ -40,6 +40,9 @@ public class CreateUserProfile extends AppCompatActivity implements AdapterView.
     TextView proceedButton;
     private AuthUser authUser;
 
+    @BindView(R.id.progressbar)
+    SmoothProgressBar progressbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,8 +53,9 @@ public class CreateUserProfile extends AppCompatActivity implements AdapterView.
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        selected_phrase = parent.getItemAtPosition(position).toString();
-        Toast.makeText(parent.getContext(), "Selected: " + selected_phrase, Toast.LENGTH_LONG).show();
+        if (position > 0)
+            selected_phrase = parent.getItemAtPosition(position).toString();
+//        Toast.makeText(parent.getContext(), "Selected: " + selected_phrase, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -62,41 +66,29 @@ public class CreateUserProfile extends AppCompatActivity implements AdapterView.
     @OnClick(R.id.proceedButton)
     public void onViewClicked() {
         user_name = voiceTextET.getText().toString();
-        if (user_name.isEmpty()) {
-            Toast.makeText(CreateUserProfile.this, "Enter profile Name", Toast.LENGTH_LONG).show();
-        }
-        if (selected_phrase.isEmpty()) {
-            Toast.makeText(CreateUserProfile.this, "Selected one phrase to proceed", Toast.LENGTH_LONG).show();
+        if (notesSpinner.getSelectedItemPosition() == 0) {
+            Toast.makeText(CreateUserProfile.this, "Please select phrase for voice recognition", Toast.LENGTH_LONG).show();
+        } else if (user_name.isEmpty()) {
+            Toast.makeText(CreateUserProfile.this, "Enter profile name", Toast.LENGTH_LONG).show();
+        } else if (selected_phrase.isEmpty()) {
+            Toast.makeText(CreateUserProfile.this, "Select one phrase to proceed", Toast.LENGTH_LONG).show();
         } else {
             dbHelper = new DBHelper(CreateUserProfile.this);
             AuthUser user = dbHelper.getUser(user_name);
             if (user != null) {
-                Toast.makeText(CreateUserProfile.this, "Already Taken Choose use any other", Toast.LENGTH_LONG).show();
+                Toast.makeText(CreateUserProfile.this, "User name is already taken, choose different", Toast.LENGTH_LONG).show();
             } else {
                 new CreateProfileTask().execute();
             }
         }
     }
 
-
     private class CreateProfileTask extends AsyncTask<Void, Void, String> {
-        protected void onPostExecute(String uuid) {
-            if (!uuid.isEmpty()) {
-                authUser = new AuthUser(user_name, uuid, selected_phrase, 0);
-                dbHelper.addUser(authUser);
-                Toast.makeText(CreateUserProfile.this, "You profile successfully created: ", Toast.LENGTH_LONG).show();
 
-                Handler h = new Handler() {
-                    @Override
-                    public void handleMessage(Message msg) {
-                        Intent i = new Intent().setClass(CreateUserProfile.this, VoiceEnrollment.class);
-                        i.putExtra("USER_NAME", authUser.getUser_name());
-                        startActivity(i);
-                    }
-                };
-
-                h.sendEmptyMessageDelayed(0, 800);
-            }
+        @Override
+        protected void onPreExecute() {
+            progressbar.setVisibility(View.VISIBLE);
+            progressbar.progressiveStart();
         }
 
         @Override
@@ -112,6 +104,30 @@ public class CreateUserProfile extends AppCompatActivity implements AdapterView.
             }
             return uuid;
         }
+
+        protected void onPostExecute(String uuid) {
+
+            progressbar.progressiveStop();
+            progressbar.setVisibility(View.GONE);
+
+            if (!uuid.isEmpty()) {
+                authUser = new AuthUser(user_name, uuid, selected_phrase, 0);
+                dbHelper.addUser(authUser);
+                Toast.makeText(CreateUserProfile.this, "Your profile is created successfully", Toast.LENGTH_LONG).show();
+
+                Handler h = new Handler() {
+                    @Override
+                    public void handleMessage(Message msg) {
+                        Intent i = new Intent().setClass(CreateUserProfile.this, VoiceEnrollment.class);
+                        i.putExtra("USER_NAME", authUser.getUser_name());
+                        startActivity(i);
+                    }
+                };
+
+                h.sendEmptyMessageDelayed(0, 800);
+            }
+        }
+
     }
 
 }

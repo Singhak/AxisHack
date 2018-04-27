@@ -3,6 +3,7 @@
     <string name="phrase_hint">Select one phrase for creating profile</string>
     <string name="namehint">Give any user id</string>
     <string-array name="phrase">
+        <item>Select Phrase</item>
         <item>I am going to make him an offer he cannot refuse</item>
         <item>Houston we have had a problem</item>
         <item>My voice is my passport verify me</item>

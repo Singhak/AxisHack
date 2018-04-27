@@ -10,8 +10,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,6 +48,8 @@ public class VoiceVerification extends AppCompatActivity {
     ImageView voiceRecording;
     @BindView(R.id.voiceRecordingLabel)
     TextView voiceRecordingLabel;
+    @BindView(R.id.voiceMessagesLayout)
+    LinearLayout voiceMessagesLayout;
     @BindView(R.id.recordingGIF)
     GifImageView recordingGIF;
     private WavAudioRecorder wavRecorder;
@@ -128,40 +130,34 @@ public class VoiceVerification extends AppCompatActivity {
 
         protected void onPostExecute(Void aVoid) {
             progressBar.setVisibility(View.GONE);
+            voiceMessagesLayout.setVisibility(View.GONE);
             progressBar.progressiveStop();
-            voiceRecordingLabel.setText("Your voice is " + verificationResult+"ED");
+            voiceRecordingLabel.setText("Your voice is " + verificationResult + "ED");
         }
     }
 
     public boolean isAudioPermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-                Log.v("Profile", "Permission is granted");
                 return true;
             } else {
-                Log.v("Profile", "Permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 2);
                 return false;
             }
-        } else { //permission is automatically granted on sdk<23 upon installation
-            Log.v("Profile", "Permission is granted");
+        } else {
             return true;
         }
     }
 
     public boolean isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-                Log.v("Profile", "Permission is granted");
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 return true;
             } else {
-                Log.v("Profile", "Permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 return false;
             }
-        } else { //permission is automatically granted on sdk<23 upon installation
-            Log.v("Profile", "Permission is granted");
+        } else {
             return true;
         }
     }
@@ -170,7 +166,6 @@ public class VoiceVerification extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Log.v("Profile", "Permission: " + permissions[0] + "was " + grantResults[0]);
         }
     }
 }
